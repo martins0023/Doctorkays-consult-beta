@@ -6,6 +6,7 @@ import UploadPage from "./components/Consultation/UploadPage";
 import AIAnalysis from "./components/Consultation/AIAnalysis";
 import Subscribe from "./components/Consultation/Booking/Subscribe";
 import NotFound from "./components/NotFound";
+import Policy from "./pages/Policy";
 
 const App = () => {
   return (
