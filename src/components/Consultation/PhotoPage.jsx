@@ -102,7 +102,7 @@ export default function PhotoPage() {
     }
 
     try {
-      await axios.post(`${API_BASE}/api/free-subscription`, body, {
+      const { data } = await axios.post(`${API_BASE}/api/free-subscription`, body, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       setToast({

@@ -1,6 +1,6 @@
 // File: pages/PricingForm.jsx
 import React, { useState } from "react";
-import { User, Mail, Phone, Info } from "lucide-react";
+import { User, Mail, Phone, MessageCircle, Info } from "lucide-react";
 
 export default function PricingForm({ plan, onBack, onSubmit }) {
   const [values, setValues] = useState({
@@ -10,18 +10,26 @@ export default function PricingForm({ plan, onBack, onSubmit }) {
     notes: "",
   });
 
+  const [loading, setLoading] = useState(false);
+
   const handleChange = (field, v) => setValues((v0) => ({ ...v0, [field]: v }));
 
-  const canSubmit = values.name && values.email;
+  const canSubmit = Boolean(values.name.trim() && values.email.trim());
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!canSubmit) return;
+    setLoading(true);
+    try {
+      // assume onSubmit returns a Promise
+      await onSubmit(values);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        onSubmit(values);
-      }}
-      className="space-y-6"
-    >
+    <form onSubmit={handleSubmit} className="space-y-6">
       <div className="gap-4 pb-3">
         <div>
           <p className="font-semibold text-xl text-gray-200 pt-4">
@@ -44,6 +52,7 @@ export default function PricingForm({ plan, onBack, onSubmit }) {
           <Info className="w-4 h-4 text-blue-500" />
         </div>
       </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8 font-sans">
         {/* Name */}
         <div className="relative">
@@ -90,10 +99,10 @@ export default function PricingForm({ plan, onBack, onSubmit }) {
         <div className="relative md:col-span-2">
           {/* <MessageCircle className="absolute top-3 left-3 text-gray-400" /> */}
           <textarea
-            placeholder="Brief description"
+            placeholder="Any notes or special requests?"
             disabled={!values.email.trim()}
-            value={values.description}
-            onChange={(e) => handleChange("description", e.target.value)}
+            value={values.notes}
+            onChange={(e) => handleChange("notes", e.target.value)}
             rows={4}
             className="w-full pl-5 pr-3 pt-3 pb-2 rounded-lg border text-sm text-gray-700 border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500
             disabled:opacity-50 disabled:cursor-not-allowed resize-none"
@@ -112,14 +121,41 @@ export default function PricingForm({ plan, onBack, onSubmit }) {
 
         <button
           type="submit"
-          disabled={!canSubmit}
-          className={`px-6 py-3 rounded-lg font-semibold transition ${
-            canSubmit
-              ? "bg-purple-600 text-white hover:bg-purple-700"
-              : "bg-purple-300 text-white cursor-not-allowed"
-          }`}
+          disabled={!canSubmit || loading}
+          className={`inline-flex items-center px-6 py-3 rounded-lg font-semibold transition 
+            ${
+              canSubmit && !loading
+                ? "bg-purple-600 text-white hover:bg-purple-700"
+                : "bg-purple-300 text-white cursor-not-allowed"
+            }`}
         >
-          Confirm & Pay
+          {loading ? (
+            <>
+              <svg
+                className="animate-spin w-5 h-5 mr-2 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v8H4z"
+                />
+              </svg>
+              Processing…
+            </>
+          ) : (
+            "Confirm"
+          )}
         </button>
       </div>
     </form>
