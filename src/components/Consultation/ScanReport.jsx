@@ -10,7 +10,6 @@ import {
   Loader2,
 } from "lucide-react";
 import Navbar from "./components/Navbar";
-import { aifile } from "../../assets";
 import TermsPolicy from "../TermsPolicy";
 import { useNavigate } from "react-router-dom";
 
@@ -18,7 +17,6 @@ const ACTIONS = [
   {
     id: "upload",
     label: "Upload PDF / DOC",
-    img: aifile,
     Icon: FileText,
     about:
       "Unlock AI/Specialist capabilities for your Scan reports with a simple upload.",
