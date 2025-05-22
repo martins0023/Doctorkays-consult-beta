@@ -32,14 +32,15 @@ export default function AIAnalysis() {
   const [report, setReport] = useState(null);
   const [analysis, setAnalysis] = useState(null);
   const [rawOutput, setRawOutput] = useState("");
+  const [language, setLanguage] = useState("English");
   const [error, setError] = useState("");
 
   // 1) fetch the saved consultation
   useEffect(() => {
     axios
       .get(`${API_BASE}/api/consultation/${id}`)
-      .then(res => setReport(res.data.consultation))
-      .catch(err => {
+      .then((res) => setReport(res.data.consultation))
+      .catch((err) => {
         console.error(err);
         setError("Failed to load consultation record.");
       });
@@ -55,13 +56,15 @@ export default function AIAnalysis() {
         fileUrl: report.reportFileUrl,
         userName: report.name,
         userStory: report.story || report.description,
+        language,
       })
-      .then(res => {
+      .then((res) => {
         console.log("✅ AI Analysis Response:", res.data); // Check full API re
         setAnalysis(res.data.analysis);
-        setRawOutput(res.data.raw || "");
+        // setRawOutput(res.data.raw || "");
+        setRawOutput(res.data.summary || "");
       })
-      .catch(err => {
+      .catch((err) => {
         console.error(err);
         setError("AI analysis failed.");
       })
@@ -73,7 +76,9 @@ export default function AIAnalysis() {
   }
 
   if (loading || !analysis) {
-    return <FullScreenLoader message="Analyzing your report… one moment, please!" />;
+    return (
+      <FullScreenLoader message="Analyzing your report… one moment, please!" />
+    );
   }
 
   const sections = [
@@ -108,9 +113,21 @@ export default function AIAnalysis() {
       </div>
 
       <main className="max-w-4xl mx-auto p-4 space-y-8 font-sans">
+        <label className="block text-gray-200 mb-1">Language:</label>
+        <select
+          value={language}
+          onChange={(e) => setLanguage(e.target.value)}
+          className="bg-gray-700 text-gray-100 p-2 rounded"
+        >
+          <option>English</option>
+          <option>Français</option>
+          <option>Deutsch</option>
+          <option>Español</option>
+          <option>Italiano</option>
+        </select>
         <div className="flex gap-1 items-center">
-        <h1 className="text-3xl font-bold">AI Analysis Results</h1>
-        <Wand className="w-7 h-7"/>
+          <h1 className="text-3xl font-bold">AI Analysis Results</h1>
+          <Wand className="w-7 h-7" />
         </div>
 
         {sections.map((heading) => {
@@ -118,7 +135,9 @@ export default function AIAnalysis() {
           if (!body) return null;
           return (
             <section key={heading} className="bg-white p-6 rounded-lg shadow">
-              <h2 className="sm:text-2xl text-xl font-medium mb-2 text-gray-300">{heading}</h2>
+              <h2 className="sm:text-2xl text-xl font-medium mb-2 text-gray-300">
+                {heading}
+              </h2>
               <Typewriter
                 text={body}
                 speed={20}
