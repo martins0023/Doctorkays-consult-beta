@@ -25,9 +25,20 @@ function Typewriter({ text, speed = 30, className }) {
 
 const API_BASE = "https://doctorkays-backend-1.onrender.com";
 
+// Available languages
+const LANGUAGES = [
+  { code: "en", label: "English" },
+  { code: "fr", label: "Français" },
+  { code: "de", label: "Deutsch" },
+  { code: "es", label: "Español" },
+  { code: "it", label: "Italiano" },
+  { code: "zh", label: "中文" },
+];
+
 export default function AIAnalysis() {
   const { id } = useParams();
   const navigate = useNavigate();
+
   const [loading, setLoading] = useState(true);
   const [report, setReport] = useState(null);
   const [analysis, setAnalysis] = useState(null);
@@ -43,6 +54,7 @@ export default function AIAnalysis() {
       .catch((err) => {
         console.error(err);
         setError("Failed to load consultation record.");
+        setLoading(false);
       });
   }, [id]);
 
@@ -50,13 +62,17 @@ export default function AIAnalysis() {
   useEffect(() => {
     if (!report?.reportFileUrl) return;
 
+    //clear previous state
+    setAnalysis(null);
+    setRawOutput("");
     setLoading(true);
+
     axios
       .post(`${API_BASE}/api/ai-analysis`, {
         fileUrl: report.reportFileUrl,
         userName: report.name,
         userStory: report.story || report.description,
-        language,
+        preferredLanguage: language,
       })
       .then((res) => {
         console.log("✅ AI Analysis Response:", res.data); // Check full API re
@@ -69,7 +85,7 @@ export default function AIAnalysis() {
         setError("AI analysis failed.");
       })
       .finally(() => setLoading(false));
-  }, [report]);
+  }, [report, language]);
 
   if (error) {
     return <FullScreenError message={error} />;
@@ -113,18 +129,23 @@ export default function AIAnalysis() {
       </div>
 
       <main className="max-w-4xl mx-auto p-4 space-y-8 font-sans">
-        <label className="block text-gray-200 mb-1">Language:</label>
-        <select
-          value={language}
-          onChange={(e) => setLanguage(e.target.value)}
-          className="bg-gray-700 text-gray-100 p-2 rounded"
-        >
-          <option>English</option>
-          <option>Français</option>
-          <option>Deutsch</option>
-          <option>Español</option>
-          <option>Italiano</option>
-        </select>
+        <div className="flex items-center space-x-2">
+          <label htmlFor="language" className="text-gray-200">
+            Language:
+          </label>
+          <select
+            id="language"
+            value={language}
+            onChange={(e) => setLanguage(e.target.value)}
+            className="bg-gray-700 text-gray-100 p-2 rounded"
+          >
+            {LANGUAGES.map(({ code, label }) => (
+              <option key={code} value={code}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </div>
         <div className="flex gap-1 items-center">
           <h1 className="text-3xl font-bold">AI Analysis Results</h1>
           <Wand className="w-7 h-7" />
@@ -148,7 +169,7 @@ export default function AIAnalysis() {
         })}
 
         <section className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-2 text-black">Your Output</h2>
+          <h2 className="text-xl font-semibold mb-2 text-black">Full Output</h2>
           <Typewriter
             text={rawOutput}
             speed={5}
